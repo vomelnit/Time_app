@@ -6,3 +6,5 @@ To built executable file you do:
  
 Command will create "app" file that can be opened using 
   [git_directory]/app
+
+Documentation in process..
