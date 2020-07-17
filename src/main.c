@@ -1,25 +1,55 @@
-#include "variables.h"
+#include <time.h>
+#include "main.h"
 
-void logging(char *msg);
-gboolean timer_handler(GtkWidget *focus_timer_label);
-void initialize_all_elements();
-void on_start_btn_clicked();
-void on_pause_btn_clicked();
-void on_resume_btn_clicked();
-void on_stop_btn_clicked();
-void on_focus_ok_btn_clicked();
-void on_ok_dialog_btn_clicked();
-void timer_stopping();
-int get_minutes_from_str (const gchar *str);
-void show_warning_msg(char str[]);
-void on_exit_btn_clicked();
-void on_main_window_destroy();
+
+
+
+int main(int argc, char *argv[])
+{
+    gtk_init(&argc, &argv);
+    builder = gtk_builder_new();
+    gtk_builder_add_from_file (builder, "xml/builder.glade", NULL);
+    gtk_builder_connect_signals(builder, NULL);
+
+    initialize_all_elements();
+
+    getcwd(curr_dir, sizeof(curr_dir));
+    sprintf(log_path,"%s/log.log",curr_dir);
+    gtk_label_set_text(GTK_LABEL(logfile_path_label),log_path);
+
+    g_timeout_add_seconds(1,(GSourceFunc) timer_handler,focus_timer_label);
+    g_object_unref(builder);
+    gtk_widget_show(window);
+
+    gtk_main();
+
+    return 0;
+}
+
+void on_start_btn_clicked(){
+  int entered_number = get_minutes_from_str(gtk_entry_get_text(GTK_ENTRY (minutes_entry)));
+  if (entered_number!=-1){
+    minutes_entered = entered_number;
+    minutes_left = minutes_entered;
+    seconds_left = 0;
+    gtk_widget_set_visible (minutes_entry,FALSE);
+    gtk_widget_set_visible (focus_info_label,FALSE);
+    gtk_widget_set_visible (focus_timer_label,TRUE);
+    gtk_widget_set_visible (start_btn,FALSE);
+    gtk_widget_set_visible (pause_btn,TRUE);
+    gtk_widget_set_visible (stop_btn,TRUE);
+    if_timer_on = TRUE;
+    if_can_change_log_status = FALSE;
+    logging("Start");
+  }
+  gtk_entry_set_text(GTK_ENTRY (minutes_entry),"");
+}
 
 void logging(char *msg){
   FILE *log;
   time_t t = time(NULL);
   struct tm tm = *localtime(&t);
-  log = fopen("log.log", "a+"); // a+ (create + append) option will allow appending which is useful in a log file
+  log = fopen("log.log", "a+");
   if (log == NULL) show_warning_msg("Problem with logging");
   else {
     fprintf(log,"%d-%02d-%02d %02d:%02d:%02d %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, msg);
@@ -41,7 +71,7 @@ gboolean timer_handler(GtkWidget *focus_timer_label)
       }
       else seconds_left--;
       sprintf(time_left_str,"%d:%02d",minutes_left, seconds_left);
-      gtk_label_set_text(GTK_LABEL(focus_timer_label),time_left_str);    // update label
+      gtk_label_set_text(GTK_LABEL(focus_timer_label),time_left_str);
   }
     return TRUE;
 }
@@ -51,7 +81,6 @@ void initialize_all_elements(){
   dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_gtk"));
   dialog_msg = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_msg"));
   ok_dialog_btn = GTK_WIDGET(gtk_builder_get_object(builder, "ok_dialog_btn"));
-  //widgets->w_lbl_time  = GTK_WIDGET(gtk_builder_get_object(builder, "lbl_time"));
   focus_info_label = GTK_WIDGET(gtk_builder_get_object(builder, "focus_info_label"));
   focus_timer_label = GTK_WIDGET(gtk_builder_get_object(builder, "focus_timer_label"));
   minutes_entry = GTK_WIDGET(gtk_builder_get_object(builder, "minutes_entry"));
@@ -64,25 +93,6 @@ void initialize_all_elements(){
 
   logfile_path_label = GTK_WIDGET(gtk_builder_get_object(builder, "logfile_path_label"));
   save_stats_checkbtn = GTK_WIDGET(gtk_builder_get_object(builder, "save_stats_checkbtn"));
-}
-
-void on_start_btn_clicked(){
-  int entered_number = get_minutes_from_str(gtk_entry_get_text(GTK_ENTRY (minutes_entry)));
-  if (entered_number!=-1){
-    minutes_entered = entered_number;
-    minutes_left = minutes_entered;
-    seconds_left = 0;
-    gtk_widget_set_visible (minutes_entry,FALSE);
-    gtk_widget_set_visible (focus_info_label,FALSE);
-    gtk_widget_set_visible (focus_timer_label,TRUE);
-    gtk_widget_set_visible (start_btn,FALSE);
-    gtk_widget_set_visible (pause_btn,TRUE);
-    gtk_widget_set_visible (stop_btn,TRUE);
-    if_timer_on = TRUE;
-    if_can_change_log_status = FALSE;
-    logging("Start");
-  }
-  gtk_entry_set_text(GTK_ENTRY (minutes_entry),"");
 }
 
 void on_pause_btn_clicked(){
@@ -127,13 +137,8 @@ void on_ok_dialog_btn_clicked(){
   gtk_label_set_text(GTK_LABEL(dialog_msg),"");
 }
 
-// void on_save_stats_checkbtn_toggled(){
-//   if (if_can_change_log_status) if_can_change_log_status = !if_can_change_log_status;
-//   else show_warning_msg("Timer must be stopped");
-// }
 
 void timer_stopping(){
-  //logging
   char focus_conclusion[50];
   sprintf(focus_conclusion,"Focusing time: %d minutes",minutes_entered-minutes_left);
   gtk_label_set_text(GTK_LABEL(focus_timer_label),focus_conclusion);
