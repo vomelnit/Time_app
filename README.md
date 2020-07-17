@@ -1,5 +1,5 @@
 # Time_app
-App that allow to begin timer to focus.
+App that allow to begin timer to focus and save actions to file "log.log".
 
 To built executable file you do: 
   cd [git_directory] && make
@@ -7,4 +7,4 @@ To built executable file you do:
 Command will create "app" file that can be opened using 
   [git_directory]/app
 
-Documentation in process..
+In "docs" directory you can see auto-generated documentation using Doxygen
