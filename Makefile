@@ -10,9 +10,11 @@ OPT=-O2
 # warnings
 WARN=-Wall
 
+DOXFILE=dconfig
+
 PTHREAD=-pthread
 
-CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD) -pipe
+CCFLAGS= $(PTHREAD) -pipe
 
 GTKLIB=`pkg-config --cflags --libs gtk+-3.0`
 
@@ -23,7 +25,7 @@ LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic
 OBJS= main.o
 
 all: $(OBJS)
-	$(LD) -o $(TARGET) $(OBJS) $(LDFLAGS)
+	$(LD) -o $(TARGET) $(OBJS) $(LDFLAGS) && doxygen $(DOXFILE)
 
 main.o: src/main.c
 		$(CC) -c $(CCFLAGS) src/main.c  $(GTKLIB) -o main.o

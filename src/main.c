@@ -1,9 +1,12 @@
+/// @file main.c
 #include <time.h>
 #include "main.h"
 
 
 
-
+/**
+ * Main entry point of the program.
+*/
 int main(int argc, char *argv[])
 {
     gtk_init(&argc, &argv);
@@ -26,6 +29,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+/**
+ * Start button click result.
+ * Read entered number and set timer start. Hide and show gtk widgets.
+ *Logging about start.
+*/
 void on_start_btn_clicked(){
   int entered_number = get_minutes_from_str(gtk_entry_get_text(GTK_ENTRY (minutes_entry)));
   if (entered_number!=-1){
@@ -45,6 +53,10 @@ void on_start_btn_clicked(){
   gtk_entry_set_text(GTK_ENTRY (minutes_entry),"");
 }
 
+/**
+ * Logging to file log.log time, date and action
+ * @param[in] *msg
+*/
 void logging(char *msg){
   FILE *log;
   time_t t = time(NULL);
@@ -57,6 +69,11 @@ void logging(char *msg){
   }
 }
 
+/**
+ * Function that activates every second and if timer is turned on it counts.
+  * @param[in] *focus_timer_label
+  * @param[out] TRUE
+*/
 gboolean timer_handler(GtkWidget *focus_timer_label)
 {
     if (if_timer_on){
@@ -76,6 +93,9 @@ gboolean timer_handler(GtkWidget *focus_timer_label)
     return TRUE;
 }
 
+/**
+ * Initialize all gtk element pointer
+*/
 void initialize_all_elements(){
   window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
   dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_gtk"));
@@ -95,6 +115,9 @@ void initialize_all_elements(){
   save_stats_checkbtn = GTK_WIDGET(gtk_builder_get_object(builder, "save_stats_checkbtn"));
 }
 
+/**
+ * Pause button click result.
+*/
 void on_pause_btn_clicked(){
   gtk_widget_set_visible (pause_btn,FALSE);
   gtk_widget_set_visible (resume_btn,TRUE);
@@ -102,6 +125,9 @@ void on_pause_btn_clicked(){
   logging("Pause");
 }
 
+/**
+ * Resume button click result.
+*/
 void on_resume_btn_clicked(){
   gtk_widget_set_visible (pause_btn,TRUE);
   gtk_widget_set_visible (resume_btn,FALSE);
@@ -109,6 +135,9 @@ void on_resume_btn_clicked(){
   logging("Unpause");
 }
 
+/**
+ * Stop button click result.
+*/
 void on_stop_btn_clicked(){
   gtk_widget_set_visible (pause_btn,FALSE);
   gtk_widget_set_visible (resume_btn,FALSE);
@@ -121,6 +150,9 @@ void on_stop_btn_clicked(){
   if_can_change_log_status = TRUE;
 }
 
+/**
+ * OK button click result.
+*/
 void on_focus_ok_btn_clicked(){
   gtk_widget_set_visible (pause_btn,FALSE);
   gtk_widget_set_visible (resume_btn,FALSE);
@@ -132,12 +164,17 @@ void on_focus_ok_btn_clicked(){
   gtk_label_set_text(GTK_LABEL(focus_timer_label),"");
 }
 
+/**
+ * Dialog OK button click result.
+*/
 void on_ok_dialog_btn_clicked(){
   gtk_widget_hide (dialog);
   gtk_label_set_text(GTK_LABEL(dialog_msg),"");
 }
 
-
+/**
+ * Routine that reset variables and gtk elements when timer is stopped
+*/
 void timer_stopping(){
   char focus_conclusion[50];
   sprintf(focus_conclusion,"Focusing time: %d minutes",minutes_entered-minutes_left);
@@ -155,6 +192,11 @@ void timer_stopping(){
   logging("Stop");
 }
 
+/**
+ * Get int number from string
+ * @param[in] *str
+ * @param[out] min_of_focus
+*/
 int get_minutes_from_str (const gchar *str){
   int min_of_focus = 0;
   if (strlen(str)>3) {
@@ -179,17 +221,27 @@ int get_minutes_from_str (const gchar *str){
   return min_of_focus;
 }
 
+/**
+ * Pop-up dialog window with certain string message
+ * @param[in] str[]
+*/
 void show_warning_msg(char str[]){
   g_print("%s",str);
   gtk_label_set_text(GTK_LABEL(dialog_msg),str);
   gtk_widget_show(dialog);
 }
 
+/**
+ * Exit button click result.
+*/
 void on_exit_btn_clicked(){
     if (if_can_change_log_status == FALSE) logging("Stop");
     gtk_main_quit();
 }
 
+/**
+ * Close window result.
+*/
 void on_main_window_destroy()
 {
   if (if_can_change_log_status == FALSE) logging("Stop");
